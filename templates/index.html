@@ -38,54 +38,61 @@
                             <div class="hr-text hr-text-left">STEP.1 输入文本</div>
                             <div class="col-md-12">
                               <div class="mb-3">
-                                  <textarea id="text-input" rows="7" class="form-control" placeholder="请在文本框中输入要转换的文本，或从TXT文件导入，ChatTTS 将会以行为单位合成音频，每次换行，将会有较大的间隔。"></textarea>
+                                  <textarea id="text-input" rows="7" class="form-control" placeholder="请在文本框中输入要转换的文本，或从TXT文件导入，ChatTTS 将会以行为单位合成音频，每次换行，将会有较大的间隔。
+以下是一些参数说明：
+    oral：控制文本口语化程度，范围为0-9，数字越大，添加的连接词越多。
+    laugh：控制文本是否添加笑声，范围为0-9，数字越大，笑声越多。
+    break：控制文本是否添加停顿，范围为0-9，数字越大，停顿越多。">
+                                  </textarea>
                               </div>
                               <div class="mb-3">
                                   <input type="file" id="file-input" accept=".txt" class="form-control" placeholder="">
                               </div>
                             </div>
                             <div class="hr-text hr-text-left">STEP.2 文本处理</div>
-                            <div class="col-sm-6 col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">PROMPT</label>
-                                    <input id="prompt" type="text" class="form-control" data-toggle="tooltip" title="填写prompt，如 [oral_2][laugh_0][break_6]" placeholder="[oral_2][laugh_0][break_6]">
+{#                            <div class="row row-cards" id="temper_wrap">#}
+                                <div class="col-sm-6 col-md-4">
+                                    <label for="prompt_oral" class="form-label">口语化</label>
+                                    <input id="prompt_oral" type="range" class="form-range mb-2" value="2" min="0" max="9" step="1">
+                                    <span class="text-secondary">2</span>
                                 </div>
-                            </div>
-                            <div class="col-sm-6 col-md-2">
-                                <div class="mb-3">
-                                    <label class="form-label">TEXT SEED</label>
-                                    <input id="text_seed" type="number" class="form-control" value="42" min="0" data-toggle="tooltip" title="">
+                                <div class="col-sm-6 col-md-4">
+                                    <label for="prompt_laugh" class="form-label">笑声</label>
+                                    <input id="prompt_laugh" type="range" class="form-range mb-2" value="0" min="0" max="9" step="1">
+                                    <span class="text-secondary">0</span>
                                 </div>
-                            </div>
-                            <div class="col-sm-6 col-md-2">
+                                <div class="col-sm-6 col-md-4">
+                                    <label for="prompt_break" class="form-label">停顿</label>
+                                    <input id="prompt_break" type="range" class="form-range mb-2" value="6" min="0" max="9" step="1">
+                                    <span class="text-secondary">6</span>
+                                </div>
+{#                            </div>#}
+                            <div class="col-sm-6 col-md-4">
                               <div class="mb-3">
                                 <label class="form-label">INFER TOKEN</label>
                                 <input id="infer_max_new_token" type="number" class="form-control" value="2048" min="1024" data-toggle="tooltip" title="推理最大token，默认2048">
                               </div>
                             </div>
-                            <div class="col-sm-6 col-md-2">
+                            <div class="col-sm-6 col-md-4">
                               <div class="mb-3">
                                 <label class="form-label">REFINE TOKEN</label>
-                                <input id="refine_max_new_token" type="number" class="form-control" value="384" min="1" data-toggle="tooltip" title="refine text 最大token，默认384，未跳过refine text时有效">
+                                <input id="refine_max_new_token" type="number" class="form-control" value="384" min="1" data-toggle="tooltip" title="文本处理最大token，默认384，未跳过文本处理时有效">
                               </div>
                             </div>
-                            <div class="col-sm-6 col-md-3">
+                            <div class="col-sm-6 col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label" title="如果文本中加入了控制符或效果较差，可尝试选中该项" data-toggle="tooltip">SKIP REFINE TEXT</label>
+                                    <label class="form-label" title="如果文本中加入了控制符或效果较差，可尝试选中该项" data-toggle="tooltip">跳过文本处理</label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <input id="skip_refine" class="form-check-input m-0" type="checkbox" checked />
-                                        </span>
-                                        <span class="input-group-text">
-                                            跳过 REFINE TEXT
                                         </span>
                                     </div>
                               </div>
                             </div>
                             <div class="hr-text hr-text-left">STEP.3 TTS配置</div>
-                            <div class="col-sm-6 col-md-6">
+                            <div class="col-sm-6 col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">音色</label>
+                                    <label class="form-label">音色种子</label>
                                     <select id="voice" class="form-select">
                                         {% for speaker in speakers %}
                                             <option value="{{speaker}}">{{speaker}}</option>
@@ -93,12 +100,18 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-sm-6 col-md-6">
+                            <div class="col-sm-6 col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">自定义音色</label>
                                     <input id="custom_voice" type="number" class="form-control" min="0"
                                            data-toggle="tooltip" title="填写后将忽略左侧音色选择，以该填写值获取音色，大于1，例如 2000，8000 等"
                                            placeholder="自定义音色种子值"/>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">情感种子</label>
+                                    <input id="text_seed" type="number" class="form-control" value="42" min="0" data-toggle="tooltip" title="">
                                 </div>
                             </div>
                             <div class="col-sm-6 col-md-6 d-none">
@@ -122,17 +135,17 @@
                                     <span class="text-secondary">5</span>
                                 </div>
                                 <div class="col-sm-6 col-md-3">
-                                    <label for="temperature" class="form-label">TEMPERATURE</label>
+                                    <label for="temperature" class="form-label">情感波动性</label>
                                     <input id="temperature" type="range" class="form-range mb-2" value="0.1" min="0.00001" max="1.0" step="0.00001">
                                     <span class="text-secondary">0.1</span>
                                 </div>
                                 <div class="col-sm-6 col-md-3">
-                                    <label for="top_p" class="form-label">TOP_P</label>
+                                    <label for="top_p" class="form-label">情感相关性</label>
                                     <input id="top_p" type="range" class="form-range mb-2" value="0.7" min="0.001" max="0.9" step="0.05">
                                     <span class="text-secondary">0.05</span>
                                 </div>
                                 <div class="col-sm-6 col-md-3">
-                                    <label for="top_k" class="form-label">TOP_K</label>
+                                    <label for="top_k" class="form-label">情感相似性</label>
                                     <input id="top_k" type="range" class="form-range mb-2 col-md-3" value="20" min="1" max="20" step="1">
                                     <span class="text-secondary">20</span>
                                 </div>
@@ -152,7 +165,7 @@
                     <div class="card-body table-responsive">
                           <ul class="timeline" id="audio-container"></ul>
                           <div class="m-2 bg-black text-white d-none" id="code"></div>
-                      </div>
+                    </div>
                 </div>
                 <div id="stream" class="d-none">
                     <audio controls id="stream_audio"></audio>
@@ -176,9 +189,10 @@ $(document).ready(function() {
 
     let audioGenerated = false;
 
-  $('#temper_wrap input[type="range"]').on('input',function(){
-	$(this).next().text(($(this).val()));
+  $('.form-range').on('input', function() {
+      $(this).next('span').text($(this).val());
   });
+
     $('#submit-btn').click(function() {
         var text = $('#text-input').val().trim();
         if (text === '') {
@@ -196,9 +210,13 @@ $(document).ready(function() {
 			});
 			text=text_list.join("")
 			*/
+            let prompt_oral = parseInt($('#prompt_oral').val());
+            let prompt_laugh = parseInt($('#prompt_laugh').val());
+            let prompt_break = parseInt($('#prompt_break').val());
+            let prompt = `[oral_${prompt_oral}][laugh_${prompt_laugh}][break_${prompt_break}]`;
 			let data={
 				text: text,
-				prompt:$('#prompt').val(),
+				prompt: prompt,
 				voice:$('#voice').val(),
 				speed:parseInt($('#speed').val()),
 				temperature:parseFloat($('#temperature').val()),
