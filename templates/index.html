@@ -3,153 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<title>ChatTTS WebUI & API - v{{version}}</title>
-    <link href="/static/js/bootstrap.min.css" rel="stylesheet">
-	
-	<style>
-	#upload-btn{
-		position:relative;
-	}
-	#file-input{
-		position:absolute;
-		left:0;
-		right:0;
-		top:0;
-		bottom:0;
-		width:100%;
-		height:100%;
-		z-index:1;
-		opacity:0;
-		cursor:pointer;
-		font-size:0;
-		
-	}
-	#text-input{
-		min-height:200px
-	}
-
-    .btn-warning {
-      background-color: #ffc107;
-      border-color: #ffc107;
-    }
-	.font12{
-		font-size:12px
-	}
-	.w-50px{
-		display:inline-block;
-		width:50px;
-		white-space:nowrap;
-		overflow:visible
-	}
-	
-	</style>
+	<title>ChatTTS WebUI & API - V {{version}}</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler-vendors.min.css">
 </head>
-<body>	
+<body>
 
-<div class="container my-4 px-0">
-	<div>
-		<h1 class="text-center">ChatTTS WebUI & API<span class="fs-6">(v{{version}})</span></h1>
-	</div>
-	<hr>
-    <div class="row justify-content-center">
-        <div class="col-12  my-2">
-            <textarea id="text-input" class="form-control d-block" rows="3" placeholder="在此输入要转换的文本,以行为单位合成..."></textarea>
-			<span class="text-secondary fs-6">除文本框必填外，其他均为可选，若不懂无需填写</span>
-        </div>
-		<div class="col-12 my-2 ">
-			<div class="row align-items-center gx-1">
-				<div class="col align-items-center input-group">
-					<span class="input-group-text">选择音色</span>
-					<select id="voice" class="form-control">
-						{% for speaker in speakers %}
-							<option value="{{speaker}}">{{speaker}}</option>
-						{% endfor %}
-					</select>
-				</div>
-				<div class="col align-items-center input-group">
-						<span class="input-group-text" id="">音色值</span>
-						<input id="custom_voice" data-toggle="tooltip" title="填写后将忽略左侧音色选择，以该填写值获取音色,例如 2000，8000等" class="form-control" placeholder="自定义音色种子值，大于1,如 3000 9000等" type="number" min="0" />
-				</div>
-				<div class="col align-items-center input-group">
-					<span class="input-group-text  rounded-0 px-1" id="">text seed</span>
-					<input id="text_seed" class="form-control  rounded-0 " value="42" type="number" min="0" >
-				</div>
-				<div class="col align-items-center input-group"> 
-						<span class="input-group-text" id="">Prompt</span>
-						<input id="prompt" value="[break_6]" class="form-control" data-toggle="tooltip" title="填写prompt，如 [oral_2][laugh_0][break_6]" placeholder="如 [oral_2][laugh_0][break_6]" />
-				</div>
-				
-				<div class="col-2 align-items-center">
-				  <div class="form-check" title="如果文本中加入了控制符或效果较差，可尝试选中该项" data-toggle="tooltip">
-					<input type="checkbox" checked class="form-check-input" id="skip_refine">
-					<label class="form-check-label" for="skip_refine">跳过refine text</label>
-				  </div>
-				</div>
-				<div class="col-2 align-items-center d-none">
-				  <div class="form-check" title="是否流式" data-toggle="tooltip">
-					<input type="checkbox" class="form-check-input" id="is_stream">
-					<label class="form-check-label" for="is_stream">流式?</label>
-				  </div>
-				</div>
-			</div>
-		</div>
-		<div class="col-12 my-2 d-flex align-items-center justify-content-between" id="temper_wrap">
-			<div class="row gx-1">
-			<div class="align-items-center col d-flex">
-					<span class="input-group-text  rounded-0 px-1" id="">infer token</span>
-					<input id="infer_max_new_token" data-toggle="tooltip" class="form-control rounded-0 " value="2048" type="number" min="1024"  title="推理最大token，默认2048">
-			</div>
-			<div class="align-items-center col d-flex">
-					<span class="input-group-text  rounded-0 px-1" id="">refine token</span>
-					<input id="refine_max_new_token" data-toggle="tooltip" class="form-control  rounded-0 " value="384" type="number" min="1" title="refine text 最大token，默认384，未跳过refine text时有效">
-			</div>
-			<div class="form-group d-flex col-auto align-items-center">
-				<label for="speed">语速</label>
-				<input type="range" class="form-control-range" id="speed" min="1" max="9" step="1" value="5">
-				<span class="w-50px text-secondary font12">5</span>
-			</div>
-			
-			<div class="form-group d-flex col align-items-center">
-				<label for="temperature">temperature</label>
-				<input type="range" class="form-control-range" id="temperature" min="0.00001" max="1.0" step="0.00001" value="0.1">
-				<span class="w-50px text-secondary font12">0.1</span>
-			</div>
-			
-			<div class="form-group d-flex col align-items-center">
-				<label for="top_p">top_p</label>
-				<input type="range" class="form-control-range" id="top_p" min="0.001" max="0.9" step="0.05" value="0.7">
-				<span class="w-50px text-secondary font12">0.05</span>
 
-			</div>
-			
-			<div class="form-group d-flex col align-items-center">
-				<label for="top_k">top_k</label>
-				<input type="range" class="form-control-range" id="top_k" min="1" max="20" step="1" value="20">
-				<span class="w-50px text-secondary font12">20</span>				
-			</div>			
-			</div>
-		</div>
-        <div class="col-12  my-4 text-center">
-            <button id="submit-btn" class="btn btn-primary">立即合成声音</button>
-			<button id="upload-btn" class="btn btn-secondary">导入txt
-				<input type="file" id="file-input" accept=".txt"  >
-			</button>
-            <button id="clear-btn" class="btn btn-warning text-light" data-toggle="tooltip" title="删除所有已生成的wav文件">清理所有wav文件</button>
+<div class="page">
+  <header class="navbar navbar-expand-sm navbar-light d-print-none">
+    <div class="container-xl">
+      <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+        <a href="#">ChatTTS WebUI & API</a>
+      </h1>
+      <div class="navbar-nav flex-row order-md-last">
+        <div class="nav-item">
+          <a href="#" class="nav-link d-flex lh-1 text-reset p-0">
+            <div class="d-none d-xl-block ps-2">
+              <div class="mt-1 small text-secondary">V1.0</div>
+            </div>
+          </a>
         </div>
-        <div class="col-12  mt-4" >
-			<div class="row" id="audio-container"></div>
-            <div class="m-2 bg-black text-white d-none" id="code"></div>
+      </div>
+    </div>
+  </header>
+  <div class="page-wrapper">
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row row-deck row-cards">
+                <div class="col-12 card">
+                    <div class="card-body">
+                        <div class="row row-cards">
+                            <div class="hr-text hr-text-left">STEP.1 输入文本</div>
+                            <div class="col-md-12">
+                              <div class="mb-3">
+                                  <textarea id="text-input" rows="7" class="form-control" placeholder="请在文本框中输入要转换的文本，或从TXT文件导入，ChatTTS 将会以行为单位合成音频，每次换行，将会有较大的间隔。"></textarea>
+                              </div>
+                              <div class="mb-3">
+                                  <input type="file" id="file-input" accept=".txt" class="form-control" placeholder="">
+                              </div>
+                            </div>
+                            <div class="hr-text hr-text-left">STEP.2 文本处理</div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">PROMPT</label>
+                                    <input id="prompt" type="text" class="form-control" data-toggle="tooltip" title="填写prompt，如 [oral_2][laugh_0][break_6]" placeholder="[oral_2][laugh_0][break_6]">
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-2">
+                                <div class="mb-3">
+                                    <label class="form-label">TEXT SEED</label>
+                                    <input id="text_seed" type="number" class="form-control" value="42" min="0" data-toggle="tooltip" title="">
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-2">
+                              <div class="mb-3">
+                                <label class="form-label">INFER TOKEN</label>
+                                <input id="infer_max_new_token" type="number" class="form-control" value="2048" min="1024" data-toggle="tooltip" title="推理最大token，默认2048">
+                              </div>
+                            </div>
+                            <div class="col-sm-6 col-md-2">
+                              <div class="mb-3">
+                                <label class="form-label">REFINE TOKEN</label>
+                                <input id="refine_max_new_token" type="number" class="form-control" value="384" min="1" data-toggle="tooltip" title="refine text 最大token，默认384，未跳过refine text时有效">
+                              </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label" title="如果文本中加入了控制符或效果较差，可尝试选中该项" data-toggle="tooltip">SKIP REFINE TEXT</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <input id="skip_refine" class="form-check-input m-0" type="checkbox" checked />
+                                        </span>
+                                        <span class="input-group-text">
+                                            我希望跳过 REFINE TEXT
+                                        </span>
+                                    </div>
+                              </div>
+                            </div>
+                            <div class="hr-text hr-text-left">STEP.3 TTS配置</div>
+                            <div class="col-sm-6 col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">音色</label>
+                                    <select id="voice" class="form-select">
+                                        {% for speaker in speakers %}
+                                            <option value="{{speaker}}">{{speaker}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">自定义音色</label>
+                                    <input id="custom_voice" type="number" class="form-control" min="0"
+                                           data-toggle="tooltip" title="填写后将忽略左侧音色选择，以该填写值获取音色，大于1，例如 2000，8000 等"
+                                           placeholder="自定义音色种子值"/>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-6 d-none">
+                                <div class="mb-3">
+                                    <label class="form-label">流式输出</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <input id="is_stream" class="form-check-input m-0" type="checkbox">
+                                        </span>
+                                        <span class="input-group-text">
+                                            我想启用流式输出。
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                          </div>
+                        <div class="row row-cards" id="temper_wrap">
+                                <div class="col-sm-6 col-md-3">
+                                    <label for="speed" class="form-label">语速</label>
+                                    <input id="speed" type="range" class="form-range mb-2" value="5" min="1" max="9" step="1">
+                                    <span class="text-secondary">5</span>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <label for="temperature" class="form-label">TEMPERATURE</label>
+                                    <input id="temperature" type="range" class="form-range mb-2" value="0.1" min="0.00001" max="1.0" step="0.00001">
+                                    <span class="text-secondary">0.1</span>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <label for="top_p" class="form-label">TOP_P</label>
+                                    <input id="top_p" type="range" class="form-range mb-2" value="0.7" min="0.001" max="0.9" step="0.05">
+                                    <span class="text-secondary">0.05</span>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <label for="top_k" class="form-label">TOP_K</label>
+                                    <input id="top_k" type="range" class="form-range mb-2 col-md-3" value="20" min="1" max="20" step="1">
+                                    <span class="text-secondary">20</span>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="card-footer text-end">
+                        <button id="submit-btn" type="submit" class="btn btn-primary">立即合成</button>
+                    </div>
+                </div>
+                <div class="col-12 card">
+                    <div class="card-header">
+                        <h3 class="card-title">输出音频</h3>
+                        <div class="card-actions">
+                            <button id="clear-btn" type="submit" class="btn btn-warning">清理所有WAV文件</button>
+                        </div>
+                    </div>
+                    <div class="card-body table-responsive">
+                          <ul class="timeline" id="audio-container"></ul>
+                          <div class="m-2 bg-black text-white d-none" id="code"></div>
+                      </div>
+                </div>
+                <div id="stream" class="d-none">
+                    <audio controls id="stream_audio"></audio>
+                </div>
+            </div>
+        </div>
+        <div class="text-center my-4">
+            <a class="btn btn-link text-secondary" href="https://github.com/jianchang512/chatTTS-ui" target="_blank">GitHub ChatTTS-UI</a>
+            <a class="btn btn-link text-secondary" href="https://github.com/2noise/ChatTTS" target="_blank">GitHub ChatTTS</a>
         </div>
     </div>
-	
-	<div id="stream" class="d-none">
-		<audio controls id="stream_audio"></audio>
-	</div>
-	
-	<div class="text-center my-4">
-		<a class="btn btn-link text-secondary" href="https://github.com/jianchang512/chatTTS-ui" target="_blank">GitHub ChatTTS-UI</a>
-		<a class="btn btn-link text-secondary" href="https://github.com/2noise/ChatTTS" target="_blank">GitHub ChatTTS</a>
-	</div>
+  </div>
 </div>
 
 <script src="/static/js/jquery.min.js"></script>
@@ -210,38 +225,47 @@ $(document).ready(function() {
                 let pos = audio.filename.lastIndexOf('/') + 1;
                 let filename = audio.filename.substr(pos);
                 let jsCode = `# API调用代码
+                import requests
 
-import requests
+                res = requests.post('http://${location.host}/tts', data=${JSON.stringify(data, null, 2)})
+                print(res.json())
 
-res = requests.post('http://${location.host}/tts', data=${JSON.stringify(data, null, 2)})
-print(res.json())
+                #ok
+                {code:0, msg:'ok', audio_files:[{filename: ${audio.filename}, url: ${audio.url}}]}
 
-#ok
-{code:0, msg:'ok', audio_files:[{filename: ${audio.filename}, url: ${audio.url}}]}
-
-#error
-{code:1, msg:"error"}
-`;
-				let n=$('#audio-container > div').length+1;
+                #error
+                {code:1, msg:"error"}
+                `;
+				let n=$('#audio-container > li').length+1;
                 $('#audio-container').prepend(
 				`
-                  <div class="col-12 mb-2 pb-2 border-bottom">
-                    <div>						
-						[${n}] ${filename} 
-					</div>
-					<div class="d-flex align-items-center my-1">
-						<a title="移除显示，不删除wav文件" href="javascripts:;" onclick="$(this).parent().parent().remove()" class="btn btn-close font12 me-2"></a>
-						<audio controls autoplay src="${audio.url}"></audio>
-                                                <a href="${audio.url}" download="${filename}" class="btn btn-success ms-2">下载音频</a>
-					</div>
-                    <div class="d-flex align-items-center text-secondary fs-6">
-						<button class="btn btn-info text-light me-2 show-js-btn" data-js-code="${encodeURIComponent(jsCode)}">显示API调用</button>
-						<span>
-						推理时长: ${audio.inference_time} 秒
-						</span>
-					</div>
-                    <div class="m-2 bg-black text-white d-none code-container p-1"></div>
-                  </div>
+                    <li class="timeline-event">
+                        <div class="timeline-event-icon">${n}</div>
+                        <div class="card timeline-event-card">
+                            <div class="card-body">
+                                <div class="text-secondary float-end">推理用时 ${audio.inference_time} 秒</div>
+                                <h4>${filename}</h4>
+                            </div>
+                            <div class="card-footer">
+                                <ul class="nav nav-pills card-header-pills">
+                                    <li class="nav-item">
+                                        <audio controls autoplay src="${audio.url}" style="height:35px; width:350px;"></audio>
+                                    </li>
+                                    <li class="nav ms-auto">
+                                        <a title="隐藏该文件" href="javascripts:;" onclick="$(this).parent().parent().parent().parent().parent().remove()" class="nav-link">
+                                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-eye-off"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.585 10.587a2 2 0 0 0 2.829 2.828" /><path d="M16.681 16.673a8.717 8.717 0 0 1 -4.681 1.327c-3.6 0 -6.6 -2 -9 -6c1.272 -2.12 2.712 -3.678 4.32 -4.674m2.86 -1.146a9.055 9.055 0 0 1 1.82 -.18c3.6 0 6.6 2 9 6c-.666 1.11 -1.379 2.067 -2.138 2.87" /><path d="M3 3l18 18" /></svg>
+                                        </a>
+						                <a title="显示API调用"  class="nav-link" data-js-code="${encodeURIComponent(jsCode)}">
+                                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-code"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 8l-4 4l4 4" /><path d="M17 8l4 4l-4 4" /><path d="M14 4l-4 16" /></svg>
+                                        </a>
+						                <a title="下载音频"  class="nav-link" href="${audio.url}" download="${filename}">
+                                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-file-download"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><path d="M12 17v-6" /><path d="M9.5 14.5l2.5 2.5l2.5 -2.5" /></svg>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </>
                 `);
               });
 
@@ -310,9 +334,6 @@ print(res.json())
       });
     });
   });
-
-	
-	
 
 
 });
